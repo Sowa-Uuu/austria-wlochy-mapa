@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Austria i Włochy – mapa miejsc</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{display:grid;grid-template-columns:340px 1fr;background:#f4f4f4;overflow:hidden}
+#sidebar{overflow-y:auto;padding:18px;background:#fff;border-right:1px solid #ddd;z-index:1002}
+#map{height:100vh} h1{margin:0 0 6px;font-size:22px} .sub{color:#666;font-size:13px;margin-bottom:14px}
+#menuBtn{display:none;position:fixed;top:14px;right:14px;z-index:1100;border:0;border-radius:999px;padding:12px 16px;background:#111;color:#fff;font-weight:700;font-size:15px;box-shadow:0 3px 12px #0005}
+#overlay{display:none}
+.closeBtn{display:none;position:absolute;top:12px;right:12px;border:0;background:#eee;border-radius:50%;width:38px;height:38px;font-size:20px}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px} .chip{padding:7px 10px;border-radius:999px;background:#eee;font-size:12px}
+.section{margin:17px 0 7px;font-size:14px;font-weight:700} .item{width:100%;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;border:0;background:transparent;text-align:left;padding:8px;border-radius:10px;cursor:pointer}
+.item:hover{background:#f1f1f1} .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px}
+.at{background:#b91c1c} .it{background:#166534} .name{font-size:14px} .nameLink{color:#0b57d0;text-decoration:none;font-weight:650} .nameLink:hover{text-decoration:underline} .meta{display:block;color:#777;font-size:11px;margin-top:3px} .siteLink{display:inline-block;margin-top:5px;color:#0b57d0;text-decoration:none;font-size:12px;font-weight:600} .siteLink:hover{text-decoration:underline} .popupLink{color:#0b57d0;text-decoration:none;font-weight:700}.popupLink:hover{text-decoration:underline}
+.marker{position:relative;width:38px;height:46px} .pin{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 7px #0005;position:absolute;left:2px;top:2px}
+.label{position:absolute;left:0;top:0;width:38px;height:38px;display:grid;place-items:center;color:white;font-weight:800;font-size:12px}
+.hotel{position:absolute;right:-4px;top:-5px;background:#fff;border-radius:50%;width:19px;height:19px;display:grid;place-items:center;font-size:12px;box-shadow:0 1px 3px #0005}
+@media(max-width:760px){
+  body{display:block;overflow:hidden}
+  #map{height:100vh;width:100vw}
+  #menuBtn{display:block}
+  #sidebar{position:fixed;top:0;right:0;width:min(86vw,380px);height:100vh;box-sizing:border-box;border-right:0;box-shadow:-8px 0 24px #0004;transform:translateX(105%);transition:transform .25s ease;z-index:1200;padding:22px 18px 30px}
+  #sidebar.open{transform:translateX(0)}
+  #overlay{display:block;position:fixed;inset:0;background:#0007;z-index:1150;opacity:0;pointer-events:none;transition:opacity .25s ease}
+  #overlay.open{opacity:1;pointer-events:auto}
+  .closeBtn{display:grid;place-items:center}
+  h1{padding-right:42px}
+}
+</style></head>
+<body><button id="menuBtn" type="button" aria-controls="sidebar" aria-expanded="false">☰ Lista miejsc</button><div id="overlay" aria-hidden="true"></div><aside id="sidebar"><button class="closeBtn" id="closeBtn" type="button" aria-label="Zamknij listę">×</button><h1>Austria i Włochy</h1><div class="sub">Tylko miejsca z Twojej listy • kliknij nazwę</div>
+<div class="legend"><span class="chip">🇦🇹 Austria</span><span class="chip">🇮🇹 Włochy</span><span class="chip">🏨 Hotel</span><span class="chip">🏔️ Miejsce</span></div><div id="list"></div></aside>
+<main id="map"></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const places=[{"n": 1, "name": "Oetztal", "country": "Austria", "type": "place", "lat": 47.202, "lon": 10.9, "url": "https://www.oetztal.com/"}, {"n": 2, "name": "Stuinbenfall", "country": "Austria", "type": "place", "lat": 47.229, "lon": 10.892, "url": "https://www.umhausen.gv.at/gemeinde/geschichte/naturdenkmaeler/stuibenfall"}, {"n": 3, "name": "Winkelbergsee", "country": "Austria", "type": "place", "lat": 47.08, "lon": 10.95, "url": "https://www.google.com/maps/search/?api=1&query=Winkelbergsee%20Austria"}, {"n": 4, "name": "cyprianerhof_dolomit_resort", "country": "Włochy", "type": "hotel", "lat": 46.54, "lon": 11.584, "url": "https://www.cyprianerhof.com/en/"}, {"n": 5, "name": "hotelkolfuschgerhof", "country": "Włochy", "type": "hotel", "lat": 46.553, "lon": 11.841, "url": "https://www.kolfuschgerhof.com/en/Default.asp"}, {"n": 6, "name": "Lago di Sorapis", "country": "Włochy", "type": "place", "lat": 46.575, "lon": 12.219, "url": "https://www.google.com/maps/search/?api=1&query=Lago%20di%20Sorapis"}, {"n": 7, "name": "Geisler Alm", "country": "Włochy", "type": "place", "lat": 46.642, "lon": 11.792, "url": "https://www.google.com/maps/search/?api=1&query=Geisler%20Alm"}, {"n": 8, "name": "Cadini di Misurina", "country": "Włochy", "type": "place", "lat": 46.611, "lon": 12.276, "url": "https://www.google.com/maps/search/?api=1&query=Cadini%20di%20Misurina"}, {"n": 9, "name": "Innerkofler", "country": "Włochy", "type": "place", "lat": 46.639, "lon": 12.3, "url": "https://www.google.com/maps/search/?api=1&query=Innerkofler%20Dolomites"}, {"n": 10, "name": "Gruppo del sella", "country": "Włochy", "type": "place", "lat": 46.51, "lon": 11.81, "url": "https://www.google.com/maps/search/?api=1&query=Gruppo%20del%20Sella"}, {"n": 11, "name": "Auf den Spuren der Beutlins", "country": "Włochy", "type": "place", "lat": 46.563, "lon": 11.761, "url": "https://www.google.com/maps/search/?api=1&query=Auf%20den%20Spuren%20der%20Beutlins"}, {"n": 12, "name": "Piknik przy drodze – Lago di Sorga", "country": "Włochy", "type": "place", "lat": 46.455, "lon": 11.775, "url": "https://www.google.com/maps/search/?api=1&query=Lago%20di%20Sorga%20Dolomites"}, {"n": 13, "name": "Passo Gardena", "country": "Włochy", "type": "place", "lat": 46.553, "lon": 11.81, "url": "https://www.google.com/maps/search/?api=1&query=Passo%20Gardena"}, {"n": 14, "name": "Lago di Carezza", "country": "Włochy", "type": "place", "lat": 46.411, "lon": 11.575, "url": "https://www.google.com/maps/search/?api=1&query=Lago%20di%20Carezza"}, {"n": 15, "name": "chianti", "country": "Włochy", "type": "place", "lat": 43.47, "lon": 11.3, "url": "https://www.visittuscany.com/en/areas/chianti/"}, {"n": 16, "name": "val dorcia", "country": "Włochy", "type": "place", "lat": 43.06, "lon": 11.62, "url": "https://www.visittuscany.com/en/areas/val-dorcia/"}, {"n": 17, "name": "Maremma", "country": "Włochy", "type": "place", "lat": 42.76, "lon": 10.98, "url": "https://www.visittuscany.com/en/areas/maremma/"}, {"n": 18, "name": "Pienza", "country": "Włochy", "type": "place", "lat": 43.077, "lon": 11.679, "url": "https://www.google.com/maps/search/?api=1&query=Pienza%20Italy"}, {"n": 19, "name": "Montepulcisno", "country": "Włochy", "type": "place", "lat": 43.098, "lon": 11.787, "url": "https://www.google.com/maps/search/?api=1&query=Montepulciano%20Italy"}, {"n": 20, "name": "Monterogioni", "country": "Włochy", "type": "place", "lat": 43.389, "lon": 11.223, "url": "https://www.google.com/maps/search/?api=1&query=Monteriggioni%20Italy"}, {"n": 21, "name": "Saturnia", "country": "Włochy", "type": "place", "lat": 42.657, "lon": 11.516, "url": "https://www.google.com/maps/search/?api=1&query=Saturnia%20Italy"}, {"n": 22, "name": "Cala Violina", "country": "Włochy", "type": "place", "lat": 42.844, "lon": 10.76, "url": "https://www.google.com/maps/search/?api=1&query=Cala%20Violina"}, {"n": 23, "name": "Marina di Bibbona", "country": "Włochy", "type": "place", "lat": 43.248, "lon": 10.528, "url": "https://www.google.com/maps/search/?api=1&query=Marina%20di%20Bibbona"}];
+const map=L.map('map');
+const sidebar=document.getElementById('sidebar');
+const menuBtn=document.getElementById('menuBtn');
+const closeBtn=document.getElementById('closeBtn');
+const overlay=document.getElementById('overlay');
+function setDrawer(open){sidebar.classList.toggle('open',open);overlay.classList.toggle('open',open);menuBtn.setAttribute('aria-expanded',open?'true':'false');document.body.style.overflow=open?'hidden':'';}
+menuBtn.addEventListener('click',()=>setDrawer(true));
+closeBtn.addEventListener('click',()=>setDrawer(false));
+overlay.addEventListener('click',()=>setDrawer(false));
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+const markers=[], byNum=new Map();
+function iconFor(p){const c=p.country==='Austria'?'at':'it';const h=p.type==='hotel'?'<span class="hotel">🏨</span>':'';return L.divIcon({className:'',html:`<div class="marker"><div class="pin ${c}"></div><div class="label">${p.n}</div>${h}</div>`,iconSize:[38,46],iconAnchor:[19,44],popupAnchor:[0,-38]})}
+places.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:iconFor(p)}).addTo(map).bindPopup(`<a class="popupLink" href="${p.url}" target="_blank" rel="noopener">${p.n}. ${p.name}</a><br>${p.country} • ${p.type==='hotel'?'🏨 Hotel':'🏔️ Miejsce'}<br><a class="siteLink" href="${p.url}" target="_blank" rel="noopener">🌐 Otwórz stronę / lokalizację</a>`);markers.push(m);byNum.set(p.n,m)});
+map.fitBounds(L.featureGroup(markers).getBounds().pad(.08));
+const groups=[
+['🇦🇹 Austria',places.filter(p=>p.country==='Austria')],
+['🇮🇹 Włochy – hotele',places.filter(p=>p.country==='Włochy'&&p.type==='hotel')],
+['🇮🇹 Włochy – miejsca',places.filter(p=>p.country==='Włochy'&&p.type==='place')]
+];
+const list=document.getElementById('list');
+groups.forEach(([title,items])=>{const h=document.createElement('div');h.className='section';h.textContent=title;list.appendChild(h);
+items.forEach(p=>{const b=document.createElement('button');b.type='button';b.className='item';const c=p.country==='Austria'?'at':'it';b.innerHTML=`<span class="num ${c}">${p.n}</span><span><a class="name nameLink" href="${p.url}" target="_blank" rel="noopener">${p.type==='hotel'?'🏨 ':'🏔️ '}${p.name}</a><span class="meta">${p.country}</span><a class="siteLink" href="${p.url}" target="_blank" rel="noopener">🌐 Otwórz stronę / lokalizację</a></span>`;b.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>e.stopPropagation()));b.addEventListener('click',()=>{const m=byNum.get(p.n);map.setView(m.getLatLng(),13,{animate:true});m.openPopup();if(window.matchMedia('(max-width:760px)').matches)setDrawer(false)});list.appendChild(b)})});
+</script></body></html>
