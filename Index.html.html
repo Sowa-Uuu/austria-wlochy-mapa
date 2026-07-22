@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>html,body,#map{height:100%;margin:0}</style></head>
+<body><div id="map"></div>
+<script>
+var map=L.map('map').setView([45.5,11.2],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
+L.marker([47.202,10.9]).addTo(map).bindPopup('Ötztal');
+L.marker([47.229,10.892]).addTo(map).bindPopup('Stuibenfall');
+L.marker([47.08,10.95]).addTo(map).bindPopup('Winkelbergsee');
+L.marker([46.54,11.584]).addTo(map).bindPopup('Cyprianerhof Dolomit Resort');
+L.marker([46.553,11.841]).addTo(map).bindPopup('Hotel Kolfuschgerhof');
+L.marker([46.575,12.219]).addTo(map).bindPopup('Lago di Sorapis');
+L.marker([46.642,11.792]).addTo(map).bindPopup('Geisler Alm');
+L.marker([46.611,12.276]).addTo(map).bindPopup('Cadini di Misurina');
+L.marker([46.639,12.3]).addTo(map).bindPopup('Innerkofler');
+L.marker([46.51,11.81]).addTo(map).bindPopup('Gruppo del Sella');
+L.marker([46.563,11.761]).addTo(map).bindPopup('Auf den Spuren der Beutlins');
+L.marker([46.455,11.775]).addTo(map).bindPopup('Piknik przy drodze – Lago di Sorga');
+L.marker([46.553,11.81]).addTo(map).bindPopup('Passo Gardena');
+L.marker([46.411,11.575]).addTo(map).bindPopup('Lago di Carezza');
+L.marker([43.47,11.3]).addTo(map).bindPopup('Chianti');
+L.marker([43.06,11.62]).addTo(map).bindPopup("Val d'Orcia");
+L.marker([42.76,10.98]).addTo(map).bindPopup('Maremma');
+L.marker([43.077,11.679]).addTo(map).bindPopup('Pienza');
+L.marker([43.098,11.787]).addTo(map).bindPopup('Montepulciano');
+L.marker([43.389,11.223]).addTo(map).bindPopup('Monteriggioni');
+L.marker([42.657,11.516]).addTo(map).bindPopup('Saturnia');
+L.marker([42.844,10.76]).addTo(map).bindPopup('Cala Violina');
+L.marker([43.248,10.528]).addTo(map).bindPopup('Marina di Bibbona');
+var group=new L.featureGroup([L.marker([47.202,10.9]) ,L.marker([47.229,10.892]) ,L.marker([47.08,10.95]) ,L.marker([46.54,11.584]) ,L.marker([46.553,11.841]) ,L.marker([46.575,12.219]) ,L.marker([46.642,11.792]) ,L.marker([46.611,12.276]) ,L.marker([46.639,12.3]) ,L.marker([46.51,11.81]) ,L.marker([46.563,11.761]) ,L.marker([46.455,11.775]) ,L.marker([46.553,11.81]) ,L.marker([46.411,11.575]) ,L.marker([43.47,11.3]) ,L.marker([43.06,11.62]) ,L.marker([42.76,10.98]) ,L.marker([43.077,11.679]) ,L.marker([43.098,11.787]) ,L.marker([43.389,11.223]) ,L.marker([42.657,11.516]) ,L.marker([42.844,10.76]) ,L.marker([43.248,10.528])]);
+map.fitBounds(group.getBounds().pad(0.1));
+</script></body></html>
